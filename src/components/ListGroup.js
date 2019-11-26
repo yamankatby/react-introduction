@@ -1,12 +1,10 @@
 import React from 'react';
 
-const ListGroupItem = (props) => {
+const ListGroupItem = props => {
 	return (
 		<li className='list-group-item list-group-item-action d-flex justify-content-between align-items-center'>
 			{props.title}
-			<span className={`badge-pill badge-${props.tintColor}`}>
-          {props.count}
-        </span>
+			<span className={`badge-pill badge-${props.tintColor}`}>{props.count}</span>
 		</li>
 	);
 };

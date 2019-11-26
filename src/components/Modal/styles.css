@@ -4,11 +4,26 @@
     right: 0;
     bottom: 0;
     left: 0;
-
     background-color: rgba(0, 0, 0, .6);
+
+    visibility: hidden;
+    opacity: 0;
+    transition: all .3s ease;
+}
+
+.modal-overlay--visible {
+    visibility: visible;
+    opacity: 1;
 }
 
 .modal-body {
     background-color: white;
     border-radius: 5px;
+
+    transform: translateY(-50px);
+    transition: all .3s ease;
+}
+
+.modal-body--visible {
+    transform: translateY(0);
 }

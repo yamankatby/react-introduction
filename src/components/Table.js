@@ -1,11 +1,14 @@
 import React from 'react';
 
-const Table = () => {
+const Table = props => {
+	const { onCreateTodoClick } = props;
 	return (
 		<div className='card mt-3'>
 			<div className='card-header d-flex justify-content-between align-items-center'>
 				TodoList
-				<button className='btn btn-primary btn-sm'>Create</button>
+				<button className='btn btn-primary btn-sm' onClick={onCreateTodoClick}>
+					Create
+				</button>
 			</div>
 			<div className='card-body'>
 				<table className='table table-bordered table-hover'>

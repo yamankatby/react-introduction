@@ -1,14 +1,23 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
-let todoText = '';
 const CreateTodo = () => {
-	const onTodoTextChange = (e) => {
-		todoText = e.currentTarget.value;
-	};
-	const onCreateTodoClicked = (e) => {
+	const [todoText, setTodoText] = useState('');
+
+	useEffect(() => {
+		document.title = 'TodoList App ' + todoText;
+		return () => {
+			document.title = 'TodoList App';
+		};
+	}, [todoText]);
+
+	const onTodoTextChange = useCallback(e => {
+		setTodoText(e.currentTarget.value);
+	}, []);
+
+	const onCreateTodoClicked = useCallback(e => {
 		e.preventDefault();
 		alert(todoText);
-	};
+	}, [todoText]);
 
 	return (
 		<>
