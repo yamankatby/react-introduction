@@ -1,14 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
-const CreateTodo = () => {
+const CreateTodo = props => {
+	const { onRequestClose } = props;
+
 	const [todoText, setTodoText] = useState('');
-
-	useEffect(() => {
-		document.title = 'TodoList App ' + todoText;
-		return () => {
-			document.title = 'TodoList App';
-		};
-	}, [todoText]);
 
 	const onTodoTextChange = useCallback(e => {
 		setTodoText(e.currentTarget.value);
@@ -20,10 +15,8 @@ const CreateTodo = () => {
 	}, [todoText]);
 
 	return (
-		<>
-			<h5>Create new Todo</h5>
-			<hr />
-			<form onSubmit={onCreateTodoClicked}>
+		<form onSubmit={onCreateTodoClicked}>
+			<div className='modal-body'>
 				<div className='form-group'>
 					<label htmlFor='todoText'>TodoText</label>
 					<input
@@ -36,9 +29,14 @@ const CreateTodo = () => {
 						onChange={onTodoTextChange}
 					/>
 				</div>
+			</div>
+			<div className='modal-footer'>
+				<button type='button' className='btn btn-secondary' onClick={onRequestClose}>
+					Close
+				</button>
 				<input type='submit' className='btn btn-primary' />
-			</form>
-		</>
+			</div>
+		</form>
 	);
 };
 

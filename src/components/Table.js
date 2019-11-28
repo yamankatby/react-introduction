@@ -1,7 +1,28 @@
 import React from 'react';
 
 const Table = props => {
-	const { onCreateTodoClick } = props;
+	const {
+		todos,
+		onCreateTodoClick,
+		onToggleTodoClick,
+		onEditTodoClick,
+		onRemoveTodoClick,
+	} = props;
+
+	const renderTodoList = todos.map((todo) => (
+		<tr>
+			<td>{todo.name}</td>
+			<td>{todo.completed ? 'Yes' : 'No'}</td>
+			<td>
+				<div className='btn-group btn-group-sm'>
+					<button className='btn btn-primary' onClick={() => onToggleTodoClick(todo.id)}>Toggle</button>
+					<button className='btn btn-primary' onClick={() => onEditTodoClick(todo.id)}>Edit</button>
+					<button className='btn btn-danger' onClick={() => onRemoveTodoClick(todo.id)}>Remove</button>
+				</div>
+			</td>
+		</tr>
+	));
+
 	return (
 		<div className='card mt-3'>
 			<div className='card-header d-flex justify-content-between align-items-center'>
@@ -20,28 +41,7 @@ const Table = props => {
 					</tr>
 					</thead>
 					<tbody>
-					<tr>
-						<td>Learn React</td>
-						<td>Not yet</td>
-						<td>
-							<div className='btn-group btn-group-sm'>
-								<button className='btn btn-primary'>Toggle</button>
-								<button className='btn btn-primary'>Edit</button>
-								<button className='btn btn-danger'>Remove</button>
-							</div>
-						</td>
-					</tr>
-					<tr>
-						<td>Learn HTML</td>
-						<td>Yep!</td>
-						<td>
-							<div className='btn-group btn-group-sm'>
-								<button className='btn btn-primary'>Toggle</button>
-								<button className='btn btn-primary'>Edit</button>
-								<button className='btn btn-danger'>Remove</button>
-							</div>
-						</td>
-					</tr>
+					{renderTodoList}
 					</tbody>
 				</table>
 			</div>
