@@ -1,37 +1,38 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import axios from 'axios';
 import ListGroup from './components/ListGroup';
 import Table from './components/Table';
 import CreateTodo from './components/CreateTodo';
 import Modal from './components/Modal/Modal';
+import './styles.css';
 
-const todoList = [
-    {
-        id: 1,
-        name: 'Learn React',
-        completed: true,
-    },
-    {
-        id: 2,
-        name: 'Learn Html',
-        completed: false,
-    },
-    {
-        id: 3,
-        name: 'Go to shopping',
-        completed: false,
-    },
-    {
-        id: 4,
-        name: 'Learn Redux',
-        completed: false,
-    },
-];
+export const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZGRmYzEyZjVmNWMxZjAwMTc4NDAwMzMiLCJpYXQiOjE1NzQ5NDUwNzF9.6RwrnwfoJ1FA2kl0y3tzbmRqB8sMNDd4Re4U3bTkCBE';
 
 const App = () => {
-    const [allTodos, setAllTodos] = useState(todoList);
+    const [allTodos, setAllTodos] = useState([]);
     const [filteredTodos, setFilteredTodos] = useState(allTodos);
 
     const [selectedFilter, setSelectedFilter] = useState('all');
+
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        setIsLoading(true);
+        axios({
+            url: 'https://todolist-backend-app.herokuapp.com/todos',
+            method: 'GET',
+            headers: {
+                'Authorization': accessToken,
+            },
+        }).then((response) => {
+            setAllTodos(response.data);
+        }).catch((error) => {
+            setError(error.message);
+        }).finally(() => {
+            setIsLoading(false);
+        });
+    }, []);
 
     useEffect(() => {
         setFilteredTodos(() => {
@@ -61,18 +62,122 @@ const App = () => {
         setSelectedFilter('uncompleted');
     }, []);
 
+    const addTodo = useCallback((todo) => {
+        setAllTodos((prevTodos) => [...prevTodos, todo]);
+    }, []);
+
     const onToggleTodoClicked = useCallback((id) => {
-        alert('You have requested to Toggle the todo with id equals to ' + id);
-    }, []);
+        setIsLoading(true);
+        axios({
+            url: 'https://todolist-backend-app.herokuapp.com/todos/toggle',
+            method: 'POST',
+            params: {
+                id,
+            },
+            headers: {
+                'Authorization': accessToken,
+            },
+        }).then(() => {
+            const itemIndex = allTodos.findIndex(todo => todo.id === id);
+            const item = allTodos[itemIndex];
+            setAllTodos(prevTodos => [
+                ...prevTodos.slice(0, itemIndex),
+                {
+                    ...item,
+                    completed: !item.completed,
+                },
+                ...prevTodos.slice(itemIndex + 1),
+            ]);
+        }).catch((error) => {
+            setError(error.message);
+        }).finally(() => {
+            setIsLoading(false);
+        });
+    }, [allTodos]);
     const onEditTodoClicked = useCallback((id) => {
-        alert('You have requested to Edit the todo with id equals to ' + id);
-    }, []);
+        const itemIndex = allTodos.findIndex((todo) => todo.id === id);
+        const item = allTodos[itemIndex];
+
+        const newName = prompt('Edit Todo', item.name);
+        if (newName !== null) {
+            if (newName === '') {
+                setError('Place enter the new name!');
+                return;
+            }
+
+            setIsLoading(true);
+            axios({
+                url: 'https://todolist-backend-app.herokuapp.com/todos/edit',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': accessToken,
+                },
+                params: {
+                    id,
+                },
+                data: {
+                    name: newName,
+                },
+            }).then(() => {
+                setAllTodos((prevTodos) => [
+                    ...prevTodos.slice(0, itemIndex),
+                    {
+                        ...prevTodos[itemIndex],
+                        name: newName,
+                    },
+                    ...prevTodos.slice(itemIndex + 1),
+                ]);
+            }).catch((error) => {
+                setError(error.message);
+            }).finally(() => {
+                setIsLoading(false);
+            });
+        }
+    }, [allTodos]);
     const onRemoveTodoClicked = useCallback((id) => {
-        alert('You have requested to Remove the todo with id equals to ' + id);
-    }, []);
+        setIsLoading(true);
+        axios({
+            url: 'https://todolist-backend-app.herokuapp.com/todos/remove',
+            method: 'POST',
+            headers: {
+                'Authorization': accessToken,
+            },
+            params: {
+                id,
+            },
+        }).then(() => {
+            const itemIndex = allTodos.findIndex((todo) => todo.id === id);
+            setAllTodos((prevTodos) => [
+                ...prevTodos.slice(0, itemIndex),
+                ...prevTodos.slice(itemIndex + 1),
+            ]);
+        }).catch((error) => {
+            setError(error.message);
+        }).finally(() => {
+            setIsLoading(false);
+        });
+    }, [allTodos]);
 
     return (
         <div className='container mt-3 mt-sm-5'>
+            {
+                isLoading &&
+                <div className='spinner-overlay'>
+                    <div className='spinner-body'>
+                        <div className='spinner' />
+                    </div>
+                </div>
+            }
+            {
+                error &&
+                <div className='alert alert-danger'>
+                    <button className='close' data-dismiss='alert'>
+                        &times;
+                    </button>
+                    {error}
+                </div>
+            }
             <ListGroup
                 allTodos={allTodos}
                 onAllFilterSelect={onAllFilterSelected}
@@ -92,7 +197,7 @@ const App = () => {
                 visible={isCreateTodoModalVisible}
                 onRequestClose={onCloseCreateTodoModalClicked}
             >
-                <CreateTodo onRequestClose={onCloseCreateTodoModalClicked} />
+                <CreateTodo onRequestClose={onCloseCreateTodoModalClicked} addTodo={addTodo} />
             </Modal>
         </div>
     );
