@@ -1,41 +1,51 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { TodoListContext } from '../config/TodoListContext';
 
 const ListGroupItem = props => {
-	const { title, count, tintColor, onClick } = props;
+	const { title, count, tintColor, onClick, active } = props;
 	return (
 		<button
 			type='button'
-			className='list-group-item list-group-item-action d-flex justify-content-between align-items-center'
+			className={`list-group-item list-group-item-action d-flex justify-content-between align-items-center ${active ? 'active' : ''}`}
 			onClick={onClick}
 		>
 			{title}
-			<span className={`badge-pill badge-${tintColor}`}>{count}</span>
+			{count !== 0 && <span className={`badge-pill badge-${active ? 'light' : tintColor}`}>{count}</span>}
 		</button>
 	);
 };
 
-const ListGroup = props => {
-	const { allTodos, onAllFilterSelect, onCompletedFilterSelect, onUncompletedFilterSelect } = props;
+const ListGroup = () => {
+	const {
+		allTodos,
+		showAllTodos,
+		selectedFilter,
+		showCompletedTodos,
+		showUncompletedTodos,
+	} = useContext(TodoListContext);
 
 	return (
 		<ul className='list-group list-group-horizontal-md'>
 			<ListGroupItem
-				title='All'
+				title='All tasks'
 				count={allTodos.length}
 				tintColor='primary'
-				onClick={onAllFilterSelect}
+				onClick={showAllTodos}
+				active={selectedFilter === 'all'}
 			/>
 			<ListGroupItem
-				title='Completed'
-				count={allTodos.filter(todo => todo.completed === true).length}
-				tintColor='warning'
-				onClick={onCompletedFilterSelect}
-			/>
-			<ListGroupItem
-				title='Uncompleted'
+				title='Incompleted tasks'
 				count={allTodos.filter(todo => todo.completed === false).length}
 				tintColor='danger'
-				onClick={onUncompletedFilterSelect}
+				onClick={showUncompletedTodos}
+				active={selectedFilter === 'uncompleted'}
+			/>
+			<ListGroupItem
+				title='Completed tasks'
+				count={allTodos.filter(todo => todo.completed === true).length}
+				tintColor='warning'
+				onClick={showCompletedTodos}
+				active={selectedFilter === 'completed'}
 			/>
 		</ul>
 	);

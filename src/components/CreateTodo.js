@@ -1,18 +1,19 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useContext, useState } from 'react';
 import axios from 'axios';
+import { TodoListContext } from '../config/TodoListContext';
 import { accessToken } from '../App';
 
 const CreateTodo = props => {
-	const { onRequestClose, addTodo } = props;
-
-	const [isLoading, setIsLoading] = useState(false);
-	const [error, setError] = useState('');
+	const { addTodo } = useContext(TodoListContext);
+	const { onRequestClose } = props;
 
 	const [todoText, setTodoText] = useState('');
-
 	const onTodoTextChange = useCallback(e => {
 		setTodoText(e.currentTarget.value);
 	}, []);
+
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState('');
 
 	const onCreateTodoClicked = useCallback(e => {
 		e.preventDefault();
@@ -22,43 +23,39 @@ const CreateTodo = props => {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				'Authorization': accessToken,
+				Authorization: accessToken,
 			},
-			data: {
-				name: todoText,
-			},
-		}).then((response) => {
-			addTodo({
-				id: response.data.id,
-				name: response.data.name,
-				completed: response.data.completed,
-			});
+			data: { name: todoText },
+		}).then(response => {
+			addTodo(response.data);
 			onRequestClose();
-		}).catch((error) => {
-			setError(error.message);
+		}).catch(e => {
+			setError(e.message);
 		}).finally(() => {
 			setIsLoading(false);
 		});
-	}, [todoText]);
+	}, [addTodo, onRequestClose, todoText]);
+
+	const renderError = error && (
+		<div className='alert alert-danger'>
+			<button className='close' data-dismiss='alert'>&times;</button>
+			{error}
+		</div>
+	);
 
 	return (
 		<form onSubmit={onCreateTodoClicked}>
 			<div className='modal-body'>
-				{
-					error &&
-					<div className='alert alert-danger'>
-						{error}
-					</div>
-				}
+				{renderError}
 				<div className='form-group'>
-					<label htmlFor='todoText'>TodoText</label>
+					<label htmlFor='todoText'>Task title</label>
 					<input
 						className='form-control'
 						id='todoText'
 						type='text'
-						placeholder='Enter TodoText'
-						minLength={2}
+						placeholder='Enter title'
 						required
+						autoFocus
 						onChange={onTodoTextChange}
 					/>
 				</div>
@@ -67,7 +64,7 @@ const CreateTodo = props => {
 				<button type='button' className='btn btn-secondary' onClick={onRequestClose} disabled={isLoading}>
 					Close
 				</button>
-				<input type='submit' className='btn btn-primary' disabled={isLoading} />
+				<input type='submit' className='btn btn-primary' disabled={isLoading} value='Add' />
 			</div>
 		</form>
 	);
